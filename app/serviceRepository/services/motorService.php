@@ -9,6 +9,12 @@ Class motorService {
         $this->motorRepository = new motorRepository();
     }
 
+    public function updateStok($data, $qty){
+        $motor['stok'] = $data->stok - $qty;
+        $motor = $this->motorRepository->update($data->id, $motor);
+        return $motor;
+    }
+
     public function getmotor(){
         $motor = $this->motorRepository->getAll();
         return $motor;

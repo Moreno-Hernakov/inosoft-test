@@ -1121,7 +1121,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"barang_id\": \"642da9ca18dc6b55bf0f3ea0\",\r\n    \"jenis\": \"mobil\",\r\n    \"jumlah\": \"4\",\r\n    \"keterangan\": \"baru lagi 123\"\r\n}"
+									"raw": "{\r\n    \"barang_id\": \"642da9ca18dc6b55bf0f3ea7\",\r\n    \"jenis\": \"mobil\",\r\n    \"jumlah\": \"6\",\r\n    \"keterangan\": \"baru lagi 123\"\r\n}"
 								},
 								"url": {
 									"raw": "http://127.0.0.1:8000/api/trans/store",

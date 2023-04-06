@@ -5,10 +5,6 @@ namespace App\Http\Controllers;
 use App\serviceRepository\services\transaksiService;
 use App\serviceRepository\services\mobilService;
 use App\serviceRepository\services\motorService;
-use App\Models\Transaksi;
-use App\Models\mobil;
-use App\Models\Motor;
-use App\Models\User;
 
 class TransaksiController extends Controller
 {
@@ -19,6 +15,7 @@ class TransaksiController extends Controller
         $this->motorService = new motorService();
         $this->mobilService = new mobilService();
     }
+    
     public function store(){
         $data = request()->validate([
             'jenis'=>'required|in:mobil,motor',
@@ -42,8 +39,17 @@ class TransaksiController extends Controller
                 "message"=> $data['jenis'] .' '.$idBarang." tidak ada"
             ], 401);
         }
+        
+        $barang = $this->$service->getById($idBarang);
+
+        if($barang->stok < $data['jumlah']){
+            return response()->json([
+                "message"=> 'stok'.$idBarang." tidak mencukupi"
+            ], 401);
+        }
 
         $transaksi = $this->transaksiService->createTransaksi($data);
+        $this->$service->updateStok($barang, $data['jumlah']);
 
         return response()->json([
             'success' => true,

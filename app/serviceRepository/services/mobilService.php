@@ -9,6 +9,12 @@ Class mobilService {
         $this->mobilRepository = new mobilRepository();
     }
 
+    public function updateStok($data, $qty){
+        $mobil['stok'] = $data->stok - $qty;
+        $mobil = $this->mobilRepository->update($data->id, $mobil);
+        return $mobil;
+    }
+    
     public function getmobil(){
         $mobil = $this->mobilRepository->getAll();
         return $mobil;
