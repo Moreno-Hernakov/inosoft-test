@@ -2,17 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Kendaraan;
+use App\serviceRepository\services\kendaraanService;
 
 class KendaraanController extends Controller
 {
+    public function __construct() {
+        $this->kendaraanService = new kendaraanService();
+    }
+
     public function index(){
-        return response()->json(Kendaraan::all(), 200);
+        $kendaraan = $this->kendaraanService->getKendaraan();
+        return response()->json($kendaraan, 200);
     }
 
     public function show($id){
-        return response()->json(Kendaraan::find($id), 200);
+        try {
+            $this->kendaraanService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "kendaraan ".$id." tidak ada"
+            ], 401);
+        }
+        $kendaraan = $this->kendaraanService->getById($id);
+        return response()->json($kendaraan, 200);
     }
 
     public function store(){
@@ -22,12 +34,12 @@ class KendaraanController extends Controller
 			'harga'=>'required|numeric',
 		]);
 
-        Kendaraan::create($data);
+        $kendaraan = $this->kendaraanService->createKendaraan($data);
 
         return response()->json([
             'success' => true,
             'message' => 'kendaraan berhasil ditambahkan',
-            'data' => $data
+            'data' => $kendaraan
         ], 200);
     }
 
@@ -38,17 +50,37 @@ class KendaraanController extends Controller
 			'harga'=>'required|numeric',
 		]);
 
-        Kendaraan::where('_id', request('id'))->update($data);
+        $id = request('id');
+
+        try {
+            $this->kendaraanService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "kendaraan ".$id." tidak ada"
+            ], 401);
+        }
+
+        $this->kendaraanService->updateKendaraan($id, $data);
+
+        $kendaraan = $this->kendaraanService->getById($id);
 
         return response()->json([
             'success' => true,
             'message' => 'kendaraan berhasil diperbarui',
-            'data' => $data
+            'data' => $kendaraan
         ]);
     }
 
     public function destroy($id){
-        Kendaraan::destroy($id);
+        try {
+            $this->kendaraanService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "kendaraan ".$id." tidak ada"
+            ], 401);
+        }
+
+        $this->kendaraanService->deleteKendaraan($id);
         return response()->json([
             'success' => true,
             'message' => 'kendaraan berhasil dihapus',

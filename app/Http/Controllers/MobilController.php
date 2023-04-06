@@ -2,17 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Mobil;
+use App\serviceRepository\services\mobilService;
 
-class MobilController extends Controller
+class mobilController extends Controller
 {
+    public function __construct() {
+        $this->mobilService = new mobilService();
+    }
+
     public function index(){
-        return response()->json(Mobil::all(), 200);
+        $mobil = $this->mobilService->getmobil();
+        return response()->json($mobil, 200);
     }
 
     public function show($id){
-        return response()->json(Mobil::find($id), 200);
+        try {
+            $this->mobilService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "mobil ".$id." tidak ada"
+            ], 401);
+        }
+
+        $mobil = $this->mobilService->getById($id);
+        return response()->json($mobil, 200);
     }
 
     public function store(){
@@ -24,12 +37,12 @@ class MobilController extends Controller
 			'kendaraan_id'=>'required'
 		]);
 
-        Mobil::create($data);
+        $mobil = $this->mobilService->createmobil($data);
 
         return response()->json([
             'success' => true,
-            'message' => 'Mobil berhasil ditambahkan',
-            'data' => $data
+            'message' => 'mobil berhasil ditambahkan',
+            'data' => $mobil
         ], 200);
     }
 
@@ -42,20 +55,40 @@ class MobilController extends Controller
 			'kendaraan_id'=>'required'
 		]);
 
-        Mobil::where('_id', request('id'))->update($data);
+        $id = request('id');
+
+        try {
+            $this->mobilService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "mobil ".$id." tidak ada"
+            ], 401);
+        }
+
+        $this->mobilService->updatemobil($id, $data);
+
+        $mobil = $this->mobilService->getById($id);
 
         return response()->json([
             'success' => true,
-            'message' => 'Mobil berhasil diperbarui',
-            'data' => $data
-        ], 200);
+            'message' => 'mobil berhasil diperbarui',
+            'data' => $mobil
+        ]);
     }
 
     public function destroy($id){
-        Mobil::destroy($id);
+        try {
+            $this->mobilService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "mobil ".$id." tidak ada"
+            ], 401);
+        }
+
+        $this->mobilService->deletemobil($id);
         return response()->json([
             'success' => true,
-            'message' => 'Mobil berhasil dihapus',
-        ], 200);
+            'message' => 'mobil berhasil dihapus',
+        ]);
     }
 }

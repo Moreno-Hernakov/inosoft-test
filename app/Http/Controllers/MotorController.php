@@ -2,17 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Motor;
+use App\serviceRepository\services\motorService;
 
-class MotorController extends Controller
+class motorController extends Controller
 {
+    public function __construct() {
+        $this->motorService = new motorService();
+    }
+
     public function index(){
-        return response()->json(Motor::all(), 200);
+        $motor = $this->motorService->getmotor();
+        return response()->json($motor, 200);
     }
 
     public function show($id){
-        return response()->json(Motor::find($id), 200);
+        try {
+            $this->motorService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "motor ".$id." tidak ada"
+            ], 401);
+        }
+        
+        $motor = $this->motorService->getById($id);
+        return response()->json($motor, 200);
     }
 
     public function store(){
@@ -24,13 +37,12 @@ class MotorController extends Controller
 			'kendaraan_id'=>'required'
 		]);
 
-
-        Motor::create($data);
+        $motor = $this->motorService->createmotor($data);
 
         return response()->json([
             'success' => true,
-            'message' => 'Motor berhasil ditambahkan',
-            'data' => $data
+            'message' => 'motor berhasil ditambahkan',
+            'data' => $motor
         ], 200);
     }
 
@@ -43,20 +55,40 @@ class MotorController extends Controller
 			'kendaraan_id'=>'required'
 		]);
 
-        Motor::where('_id', request('id'))->update($data);
+        $id = request('id');
+
+        try {
+            $this->motorService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "motor ".$id." tidak ada"
+            ], 401);
+        }
+
+        $this->motorService->updatemotor($id, $data);
+
+        $motor = $this->motorService->getById($id);
 
         return response()->json([
             'success' => true,
-            'message' => 'Motor berhasil diperbarui',
-            'data' => $data
-        ], 200);
+            'message' => 'motor berhasil diperbarui',
+            'data' => $motor
+        ]);
     }
 
     public function destroy($id){
-        Motor::destroy($id);
+        try {
+            $this->motorService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "motor ".$id." tidak ada"
+            ], 401);
+        }
+
+        $this->motorService->deletemotor($id);
         return response()->json([
             'success' => true,
-            'message' => 'Motor berhasil dihapus',
-        ], 200);
+            'message' => 'motor berhasil dihapus',
+        ]);
     }
 }

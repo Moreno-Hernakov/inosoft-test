@@ -2,28 +2,148 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\serviceRepository\services\transaksiService;
+use App\serviceRepository\services\mobilService;
+use App\serviceRepository\services\motorService;
 use App\Models\Transaksi;
+use App\Models\mobil;
+use App\Models\Motor;
+use App\Models\User;
 
 class TransaksiController extends Controller
 {
-    public function index(){
-        
+    // for user
+
+    public function __construct() {
+        $this->transaksiService = new transaksiService();
+        $this->motorService = new motorService();
+        $this->mobilService = new mobilService();
     }
-
-    public function show(){
-
-    }
-
     public function store(){
+        $data = request()->validate([
+            'jenis'=>'required|in:mobil,motor',
+			'jumlah'=>'required|numeric',
+			'keterangan'=>'required',
+			'barang_id'=>'required'
+		],
+        [
+            'jenis.in' => 'data must be \'mobil\' or \'motor\'!',
+        ]);
 
+        $data['barang_id'] =  new \MongoDB\BSON\ObjectId(request('barang_id'));
+        $data['user_id'] = auth()->user()->id;
+        $idBarang = request('barang_id');
+        $service = $data['jenis'].'Service';
+
+        try {
+            $this->$service->getById($idBarang);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> $data['jenis'] .' '.$idBarang." tidak ada"
+            ], 401);
+        }
+
+        $transaksi = $this->transaksiService->createTransaksi($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaksi berhasil ditambahkan',
+            'data' => $transaksi
+        ], 200);
+    }
+
+    public function getTransUser(){
+        $transaksi = $this->transaksiService->getTransUser();
+        return response()->json($transaksi, 200);
+    }
+
+    public function findTransUser($id){
+        
+        $transaksi = $this->transaksiService->findTransUser($id);
+    
+        if($transaksi->isEmpty()){
+            return response()->json([
+                "message"=> "transaksi anda dengan ".$id." tidak ada"
+            ], 401);
+        }
+        
+        return response()->json($transaksi, 200);
+    }
+
+    // for admin ===================================================
+    public function getTransMotor(){
+        $transaksi = $this->transaksiService->getTransJenis('motor');
+        return response()->json($transaksi, 200);
+    }
+    public function getTransMobil(){
+        $transaksi = $this->transaksiService->getTransJenis('mobil');
+        return response()->json($transaksi, 200);
+    }
+
+    public function index(){
+        $transaksi = $this->transaksiService->getTransaksi();
+        return response()->json($transaksi, 200);
+    }
+
+    public function show($id){
+        try {
+            $transaksi = $this->transaksiService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "transaksi ".$id." tidak ada"
+            ], 401);
+        }
+
+        return response()->json($transaksi, 200);
     }
 
     public function update(){
+        $data = request()->validate([
+            'id'=>'required',
+            'jenis'=>'required|in:Mobil,Motor',
+			'jumlah'=>'required|numeric',
+			'keterangan'=>'required',
+			'barang_id'=>'required'
+		],
+        [
+            'jenis.in' => 'data must be \'Mobil\' or \'Motor\'!',
+        ]); 
 
+        $id = request('id');
+
+        try {
+            $this->transaksiService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "transaksi ".$id." tidak ada"
+            ], 401);
+        }
+
+        $this->transaksiService->updateTransaksi($id, $data);
+
+        $transaksi = $this->transaksiService->getById($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaksi berhasil diperbarui',
+            'data' => $data
+        ], 200);
     }
 
-    public function destroy(){
+    public function destroy($id){
+        try {
+            $this->transaksiService->getById($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=> "transaksi ".$id." tidak ada"
+            ], 401);
+        }
 
+        $this->transaksiService->deleteTransaksi($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaksi berhasil dihapus',
+        ], 200);
     }
 }
