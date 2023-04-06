@@ -6,4 +6,4 @@
     - jalankan perintah composer install
     - copy .env dan lakukan perintah php artisan key:generate 
     - setup configurasi database di .env
-    - jalankan php artisan serve dan buka relative link untuk project TubeStream
+    - jalankan php artisan serve
