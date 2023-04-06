@@ -5,6 +5,5 @@
     - clone project
     - jalankan perintah composer install
     - copy .env dan lakukan perintah php artisan key:generate 
-    - setup configurasi database di .env dan jalankan perintah php artisan migrate --seed 
-    - tambahkan SESSION_DOMAIN=localhost di .env
+    - setup configurasi database di .env
     - jalankan php artisan serve dan buka relative link untuk project TubeStream
