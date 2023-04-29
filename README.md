@@ -4,6 +4,6 @@
 #### tata cara install
     - clone project
     - jalankan perintah composer install
-    - copy .env dan lakukan perintah php artisan key:generate 
+    - copy .env dan lakukan perintah php artisan key:generate dan php artisan jwt:secret
     - setup configurasi database di .env
     - jalankan php artisan serve
